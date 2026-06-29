@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Manel
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: A (Vibe Code)
