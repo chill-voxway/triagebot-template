@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres: Ceballos
+Nombres: Ceballos, Iker
 
 Metodología: `Spec-Driven`
