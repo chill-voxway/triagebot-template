@@ -73,3 +73,4 @@ El prompt debe pedir JSON estricto (sin markdown, sin explicaciones).
 2. Nunca hardcodees una API key en el código.
 3. Lee la API key desde `OPENROUTER_API_KEY`.
 4. `.env` nunca se commitea — comprueba que está en `.gitignore`.
+ 
