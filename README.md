@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Garai
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Vibe`
