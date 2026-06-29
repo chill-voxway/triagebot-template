@@ -93,3 +93,64 @@ git push -u origin feat/mi-tarea     # 3. subir la rama
 gh pr create --base main --fill      # 4. abrir PR
 # 5. CI verde + review -> merge en GitHub -> borrar rama
 ```
+
+## Protocolo de inicio de sesión
+
+Antes de escribir cualquier línea de código, Claude Code sigue estos pasos:
+
+1. Leer este fichero completo.
+2. Leer `BACKLOG.md` → identificar la iteración activa.
+3. Leer `iteracion-[ITER].md` → objetivo y criterio de completado.
+
+`BACKLOG.md` contiene épicas, historias y tareas con criterios de aceptación verificables (estilo Scrum). Se actualiza continuamente y absorbe los cambios de alcance.
+
+Cada `iteracion-XX.md` documenta: objetivo, contexto, solución propuesta, tareas, ficheros afectados, criterio de completado y estado.
+
+## Lógica de modificación del BACKLOG.md
+
+Estas reglas dictan cuándo y cómo Claude Code debe editar `BACKLOG.md`.
+
+### Cuándo modificarlo
+
+| Evento | Qué actualizar |
+|--------|---------------|
+| Se completa una tarea | Marcar `[ ]` → `[x]` en la historia correspondiente |
+| Se completa una historia | Marcar todas sus tareas `[x]`; actualizar estado de iteración en la tabla global si procede |
+| Cambia la iteración activa | Actualizar la línea `**Iteración activa:**` y el estado en la tabla global (PENDIENTE → EN PROGRESO → COMPLETADA) |
+| Se descubre una nueva tarea | Añadirla bajo la historia correcta con `[ ]`; si afecta dependencias, actualizar los campos "Depende de" / "Bloqueada por" |
+| Cambia el alcance | Añadir/modificar/eliminar historias; nunca borrar historial completado, marcar como `~~tachado~~` si se descarta |
+| Se crea una iteración nueva | Añadir fila a la tabla global y crear el fichero `iteracion-XX.md` correspondiente |
+
+### Reglas de integridad
+
+1. **No reordenar épicas** sin motivo: el orden refleja dependencias de implementación.
+2. **Actualizar siempre el grafo de dependencias** al final del fichero si se añaden o eliminan historias.
+3. **Una historia bloqueada no se marca EN PROGRESO** hasta que su bloqueo esté resuelto.
+4. **El campo "Iteración activa" debe coincidir** con el estado EN PROGRESO de la tabla global. Solo una iteración puede estar EN PROGRESO al mismo tiempo.
+5. **No modificar criterios de aceptación** de historias ya completadas; si cambian, crear una historia nueva.
+
+## Comando `/detectar-siguiente-iteracion` y protocolo de fichaje
+
+Comando autónomo (`.claude/commands/detectar-siguiente-iteracion.md`) que lleva
+una iteración **end-to-end**: detectar → fichar → implementar → completar.
+Trabajamos en equipo, así que estas reglas evitan colisiones:
+
+1. **La verdad del fichaje es el remoto, no el `BACKLOG.md` local.** Una
+   iteración está "cogida" si tiene una rama remota `feat/iteracion-XX` o un PR
+   abierto. Antes de decidir nada, el comando hace `git fetch` + `gh pr list`.
+2. **Notificar desde el primer instante.** Al elegir iteración, lo primero (antes
+   de tocar código de feature) es crear la rama, marcar `EN PROGRESO` en
+   `BACKLOG.md` + `iteracion-XX.md`, commitear, **push** y abrir un **Draft PR**.
+   Ese Draft PR es la señal que ve el resto del equipo.
+3. **Respeta dependencias.** Solo se ficha una iteración PENDIENTE cuyas
+   dependencias ("Depende de" en el `BACKLOG.md`) estén todas COMPLETADA.
+4. **Lock optimista.** Si el `push` del fichaje se rechaza (alguien fichó antes)
+   → re-fetch y elegir otra iteración. Nunca pisar trabajo ajeno.
+5. **Una sola iteración EN PROGRESO por persona.**
+6. **El comando nunca mergea a `main`.** Al completar, marca `COMPLETADA - fecha`
+   y deja el PR `ready`; el merge lo hace otra persona tras review (política de
+   ramas).
+7. **El repo es un fork de `chill-voxway/triagebot-template`.** Todos los
+   `gh pr create|list|ready` llevan `-R Ceballooss/triagebot-Grupo06` (y se fija
+   `gh repo set-default Ceballooss/triagebot-Grupo06`) para que los PR queden
+   **internos al fork** y NUNCA apunten al upstream.
