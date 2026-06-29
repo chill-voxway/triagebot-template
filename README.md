@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres: Mei Torres
+Nombres: Mei Torres y Naroa Manterola
 
 Metodología: `Vibe` 
