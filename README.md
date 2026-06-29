@@ -97,7 +97,7 @@ Los detalles obligatorios están en:
 ## Equipo
 
 Nombres: 
-dev-1:
-dev-2: Egoitz Aulestia
+- dev-1:
+- dev-2: Egoitz Aulestia
 
 Metodología: `Spec-Driven`
