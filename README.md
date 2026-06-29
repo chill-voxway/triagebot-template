@@ -97,5 +97,7 @@ Los detalles obligatorios están en:
 ## Equipo
 
 Nombres:
+- dev-1: Iker Cubillo
+- dev-2: Egoitz Aulestia
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
