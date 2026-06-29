@@ -8,11 +8,69 @@
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <main class="mx-auto max-w-6xl p-6">
+  <main class="mx-auto max-w-6xl p-6 space-y-6">
     <h1 class="text-3xl font-bold">TriageBot</h1>
     <p class="mt-2 text-slate-600">Tablero de incidencias con clasificación automática por IA.</p>
 
-    <!-- TODO: formulario + filtros + tabla HTMX -->
+    <!-- Formulario nuevo ticket -->
+    <section class="bg-white rounded-lg p-4 shadow-sm ring-1 ring-slate-200">
+      <h2 class="text-lg font-semibold mb-3">Nuevo ticket</h2>
+      <form id="new-ticket-form" class="space-y-3">
+        <input id="ticket-title" name="title" type="text" placeholder="Título" required
+          class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <textarea id="ticket-description" name="description" rows="3" placeholder="Descripción" required
+          class="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <button type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Crear ticket</button>
+      </form>
+    </section>
+
+    <!-- Filtros -->
+    <section>
+      <form hx-get="/tickets-table" hx-target="#tickets-table" hx-swap="innerHTML" hx-trigger="change" class="flex gap-3 flex-wrap">
+        <select name="category" class="border border-slate-300 rounded px-2 py-1 text-sm">
+          <option value="">Todas las categorías</option>
+          <option value="bug" {% if category == "bug" %}selected{% endif %}>Bug</option>
+          <option value="feature_request" {% if category == "feature_request" %}selected{% endif %}>Feature Request</option>
+          <option value="question" {% if category == "question" %}selected{% endif %}>Question</option>
+          <option value="urgent" {% if category == "urgent" %}selected{% endif %}>Urgent</option>
+        </select>
+        <select name="priority" class="border border-slate-300 rounded px-2 py-1 text-sm">
+          <option value="">Todas las prioridades</option>
+          <option value="P1" {% if priority == "P1" %}selected{% endif %}>P1</option>
+          <option value="P2" {% if priority == "P2" %}selected{% endif %}>P2</option>
+          <option value="P3" {% if priority == "P3" %}selected{% endif %}>P3</option>
+        </select>
+        <select name="status" class="border border-slate-300 rounded px-2 py-1 text-sm">
+          <option value="">Todos los estados</option>
+          <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
+          <option value="in_progress" {% if status == "in_progress" %}selected{% endif %}>In Progress</option>
+          <option value="closed" {% if status == "closed" %}selected{% endif %}>Closed</option>
+        </select>
+      </form>
+    </section>
+
+    <!-- Tabla de tickets -->
+    <div id="tickets-table">
+      {% include "_tickets_table.html" %}
+    </div>
   </main>
+
+  <script>
+    document.getElementById('new-ticket-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const title = document.getElementById('ticket-title').value;
+      const description = document.getElementById('ticket-description').value;
+      const resp = await fetch('/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description }),
+      });
+      if (resp.ok) {
+        this.reset();
+        htmx.ajax('GET', '/tickets-table', { target: '#tickets-table', swap: 'innerHTML' });
+      }
+    });
+  </script>
 </body>
 </html>

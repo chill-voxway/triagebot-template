@@ -1,14 +1,42 @@
+import json
+import os
+
 FALLBACK_CLASSIFICATION = {"category": "question", "priority": "P3", "tags": []}
+
+_ALLOWED_CATEGORIES = {"bug", "feature_request", "question", "urgent"}
+_ALLOWED_PRIORITIES = {"P1", "P2", "P3"}
 
 
 def classify_ticket(title: str, description: str) -> dict:
-    """Classify a support ticket.
+    """Classify a support ticket using OpenRouter. Returns FALLBACK on any error."""
+    try:
+        from openai import OpenAI
 
-    TODO durante el bootcamp:
-    - Llamar a Claude API usando ANTHROPIC_API_KEY.
-    - Pedir JSON estricto.
-    - Parsear y validar category, priority y tags.
-    - Nunca propagar excepciones del SDK.
-    - Devolver FALLBACK_CLASSIFICATION ante cualquier problema.
-    """
-    raise NotImplementedError("Implement this function during Lab 2")
+        client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=os.environ["OPENROUTER_API_KEY"],
+        )
+        prompt = (
+            "Classify the following support ticket. "
+            "Respond with a JSON object with exactly these fields: "
+            "category (one of: bug, feature_request, question, urgent), "
+            "priority (one of: P1, P2, P3), "
+            "tags (array of short lowercase strings).\n\n"
+            f"Title: {title}\nDescription: {description}"
+        )
+        response = client.chat.completions.create(
+            model="gpt-oss-120b",
+            messages=[{"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+        )
+        data = json.loads(response.choices[0].message.content)
+        category = data.get("category")
+        priority = data.get("priority")
+        tags = data.get("tags", [])
+        if category not in _ALLOWED_CATEGORIES or priority not in _ALLOWED_PRIORITIES:
+            return FALLBACK_CLASSIFICATION
+        if not isinstance(tags, list):
+            tags = []
+        return {"category": category, "priority": priority, "tags": [str(t) for t in tags]}
+    except Exception:
+        return FALLBACK_CLASSIFICATION
