@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Mei Torres
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Vibe` 
