@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Mikel Emaldi
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
