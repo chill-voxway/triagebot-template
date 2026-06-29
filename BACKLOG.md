@@ -9,13 +9,13 @@
 
 | Iteración | Descripción | Estado |
 |-----------|-------------|--------|
-| [IT-1](#iteración-1) | Modelo de datos y persistencia | PENDIENTE |
+| [IT-1](#iteración-1) | Modelo de datos y persistencia | COMPLETADA |
 | [IT-2](#iteración-2) | Clasificador LLM | PENDIENTE |
 | [IT-3](#iteración-3) | API REST | PENDIENTE |
 | [IT-4](#iteración-4) | Frontend | PENDIENTE |
 | [IT-5](#iteración-5) | Calidad y entrega | PENDIENTE |
 
-**Iteración activa:** IT-1
+**Iteración activa:** IT-2
 
 > Un estado `EN PROGRESO` siempre está respaldado por una rama remota
 > `feat/iteracion-XX` + un Draft PR en `Ceballooss/triagebot-Grupo06`. Esa es la
@@ -29,11 +29,11 @@
 ### Historia 1.1 — Entidad Ticket
 **Iteración:** IT-1 | **Depende de:** — | **Bloqueada por:** —
 
-- [ ] Crear `app/models.py` con `Ticket` (SQLModel)
-- [ ] Campos: `id`, `title`, `description`, `category`, `priority`, `tags`, `status`, `created_at`, `updated_at`
-- [ ] Enums: `category` ∈ {bug, feature_request, question, urgent} · `priority` ∈ {P1, P2, P3} · `status` ∈ {open, in_progress, closed}
-- [ ] `status` default `open`; timestamps UTC generados en servidor
-- [ ] Crear `app/database.py`: engine SQLite, `create_db_and_tables()`
+- [x] Crear `app/models.py` con `Ticket` (SQLModel)
+- [x] Campos: `id`, `title`, `description`, `category`, `priority`, `tags`, `status`, `created_at`, `updated_at`
+- [x] Enums: `category` ∈ {bug, feature_request, question, urgent} · `priority` ∈ {P1, P2, P3} · `status` ∈ {open, in_progress, closed}
+- [x] `status` default `open`; timestamps UTC generados en servidor
+- [x] Crear `app/db.py`: engine SQLite, `create_db_and_tables()`, `get_session()`
 
 **Criterio de aceptación:** modelo importable sin errores; enums rechazan valores fuera de lista.
 
