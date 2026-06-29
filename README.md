@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Iker
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
