@@ -96,6 +96,8 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: 
+dev-1:
+dev-2: Egoitz Aulestia
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
