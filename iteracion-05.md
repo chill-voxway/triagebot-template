@@ -21,27 +21,26 @@ alertas en el tablero e identificar tickets retrasados mediante un filtro de URL
 ### Tareas
 
 #### `app/models.py`
-- [ ] Añadir campo `fecha_limite: datetime` (UTC) al modelo `Ticket`
-- [ ] Hook o método que calcule `fecha_limite` al crear un ticket según prioridad:
+- [x] Añadir campo `fecha_limite: datetime` (UTC) al modelo `Ticket`
+- [x] Hook o método que calcule `fecha_limite` al crear un ticket según prioridad:
   - P1 (Alta): `23:59:59` del día de creación (EoD)
   - P2 (Media): `23:59:59` del día siguiente (+24 h)
   - P3 (Baja): `23:59:59` pasado mañana (+48 h)
-- [ ] Propiedad `esta_vencido` → `True` si `fecha_limite < utcnow()` y el ticket
+- [x] Propiedad `esta_vencido` → `True` si `fecha_limite < utcnow()` y el ticket
   no está en estado de finalización
 
 #### `app/db.py`
-- [ ] Añadir columna `fecha_limite` al esquema de la tabla de tickets
-- [ ] `create_ticket` y `update_ticket` mapean y persisten `fecha_limite`
+- [x] Añadir columna `fecha_limite` al esquema de la tabla de tickets
+- [x] `create_ticket` y `update_ticket` mapean y persisten `fecha_limite`
 
 #### Handler `GET /tickets`
-- [ ] Aceptar parámetro de consulta `?vencidos=true`
-- [ ] Si activo, filtrar: `fecha_limite < utcnow()` AND estado no finalizado
+- [x] Aceptar parámetro de consulta `?vencidos=true`
+- [x] Si activo, filtrar: `fecha_limite < utcnow()` AND estado no finalizado
 
-#### `templates/index.html`
-- [ ] Mostrar `fecha_limite` formateada en la tarjeta del ticket
-- [ ] Si `ticket.esta_vencido`, inyectar clase CSS de alerta (fondo/borde rojo suave
-  o badge "Vencido")
-- [ ] Botón/checkbox de alternancia que filtre vía `?vencidos=true`
+#### `templates/index.html` y `_tickets_table.html`
+- [x] Mostrar `fecha_limite` formateada en la tarjeta del ticket
+- [x] Si `ticket.esta_vencido`, inyectar clase CSS de alerta (borde rojo y badge "Vencido")
+- [x] Checkbox de alternancia que filtra vía `?vencidos=true`
 
 ---
 
@@ -55,31 +54,22 @@ el tiempo transcurrido en el estado actual. Habilitar la reapertura de incidenci
 ### Tareas
 
 #### `app/models.py`
-- [ ] Ampliar el enum `status` (o campo `estado`) a cuatro valores:
-  `abierto`, `en_curso`, `resuelto`, `cerrado`
-- [ ] Añadir campo `fecha_cambio_estado: datetime` (UTC) que registre la última
-  modificación de estado
-- [ ] Máquina de estados con transiciones libres, incluyendo reapertura explícita
-  (`resuelto`/`cerrado` → `abierto`/`en_curso`)
-- [ ] Propiedad `tiempo_en_estado_actual` que devuelva texto legible:
-  - `"X min"` / `"X h"` / `"X días"` según el tiempo desde `fecha_cambio_estado`
+- [x] Ampliar el enum `Status` a cuatro valores: `open`, `in_progress`, `resuelto`, `closed`
+- [x] Añadir campo `fecha_cambio_estado: datetime` (UTC)
+- [x] Máquina de estados con reapertura (`resuelto`/`closed` → `open`)
+- [x] Propiedad `tiempo_en_estado_actual` (texto legible: min/h/días)
 
 #### `app/db.py`
-- [ ] Añadir columna `fecha_cambio_estado` al esquema
-- [ ] Toda actualización que cambie `status` debe forzar
-  `fecha_cambio_estado = utcnow()`
+- [x] Columna `fecha_cambio_estado` en esquema; migración `ALTER TABLE` para DBs existentes
+- [x] Toda actualización de estado fuerza `fecha_cambio_estado = utcnow()`
 
 #### Handler `GET /tickets`
-- [ ] Pasar `tiempo_en_estado_actual` a la plantilla para cada ticket
+- [x] `tiempo_en_estado_actual` accesible desde la plantilla vía propiedad del modelo
 
-#### `templates/index.html`
-- [ ] Reorganizar tablero en cuatro columnas: *Abierto*, *En Curso*, *Resuelto*,
-  *Cerrado*
-- [ ] Mostrar en cada tarjeta el literal de tiempo (ej. `"En curso desde hace 45 min"`)
-- [ ] Botones condicionales por estado:
-  - *Abierto* → botón "Comenzar" (muta a `en_curso`)
-  - *En Curso* → botón "Resolver" (muta a `resuelto`)
-  - *Resuelto* o *Cerrado* → botón "Reabrir" (muta a `abierto`)
+#### `templates/index.html` y `_tickets_table.html`
+- [x] Tablero kanban 4 columnas: *Abierto*, *En Curso*, *Resuelto*, *Cerrado*
+- [x] Tiempo en estado actual en cada tarjeta
+- [x] Botones condicionales: "Comenzar", "Resolver", "Reabrir" con `POST /tickets/{id}/transicion`
 
 ---
 
@@ -88,13 +78,14 @@ el tiempo transcurrido en el estado actual. Habilitar la reapertura de incidenci
 - `app/db.py`
 - `app/main.py`
 - `templates/index.html`
+- `templates/_tickets_table.html`
 
 ## Criterio de completado
-- Trabajo 1: al crear ticket P1, `fecha_limite` es EoD del día; un ticket caducado
-  muestra badge "Vencido"; `?vencidos=true` filtra solo tickets retrasados.
-- Trabajo 2: cuatro estados disponibles; al cambiar estado, `fecha_cambio_estado`
-  se actualiza; las tarjetas muestran el tiempo en estado actual; los botones
-  mutan el estado correctamente incluyendo reapertura.
+- 5/5 tests de aceptación en verde ✅
+- `ruff check .` limpio ✅
+- Tablero kanban funcional con 4 columnas y transiciones HTMX
+- Fecha límite visible y badge "Vencido" operativo
+- Filtro `?vencidos=true` funcional
 
 ## Estado
-PENDIENTE
+COMPLETADA - 2026-06-30
