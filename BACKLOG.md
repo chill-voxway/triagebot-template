@@ -11,11 +11,11 @@
 |-----------|-------------|--------|
 | [IT-1](#iteración-1) | Modelo de datos y persistencia | COMPLETADA |
 | [IT-2](#iteración-2) | Clasificador LLM | COMPLETADA |
-| [IT-3](#iteración-3) | API REST | PENDIENTE |
+| [IT-3](#iteración-3) | API REST | EN PROGRESO |
 | [IT-4](#iteración-4) | Frontend | PENDIENTE |
 | [IT-5](#iteración-5) | Calidad y entrega | PENDIENTE |
 
-**Iteración activa:** — (ninguna EN PROGRESO; siguiente candidata: IT-3)
+**Iteración activa:** IT-3 — API REST
 
 > Un estado `EN PROGRESO` siempre está respaldado por una rama remota
 > `feat/iteracion-XX` + un Draft PR en `Ceballooss/triagebot-Grupo06`. Esa es la

@@ -37,4 +37,4 @@ Según `SPEC.md` §4:
 y `test_update_ticket_and_filter_by_status_priority_category` verdes. 0 fallos.
 
 ## Estado
-PENDIENTE
+EN PROGRESO
