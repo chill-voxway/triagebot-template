@@ -12,11 +12,11 @@
 | [IT-1](#iteración-1) | Modelo de datos y persistencia | COMPLETADA |
 | [IT-2](#iteración-2) | Clasificador LLM | COMPLETADA |
 | [IT-3](#iteración-3) | API REST | COMPLETADA |
-| [IT-4](#iteración-4) | Frontend | PENDIENTE |
-| [IT-4.1](#iteración-4) | Frontend · persistencia de filtros en URL | PENDIENTE |
+| [IT-4](#iteración-4) | Frontend | COMPLETADA |
+| [IT-4.1](#iteración-4) | Frontend · persistencia de filtros en URL | EN PROGRESO |
 | [IT-5](#iteración-5) | Calidad y entrega | PENDIENTE |
 
-**Iteración activa:** — (ninguna EN PROGRESO; siguiente candidata: IT-5)
+**Iteración activa:** IT-4.1 — Frontend · persistencia de filtros en URL (rama `feat/iteracion-04.1-filtros-url`)
 
 > Un estado `EN PROGRESO` siempre está respaldado por una rama remota
 > `feat/iteracion-XX` + un Draft PR en `Ceballooss/triagebot-Grupo06`. Esa es la
