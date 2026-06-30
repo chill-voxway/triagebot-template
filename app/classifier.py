@@ -17,12 +17,16 @@ Description: {description}"""
 
 def classify_ticket(title: str, description: str) -> dict:
     try:
-        import anthropic
+        from openai import OpenAI
 
-        client = anthropic.Anthropic(api_key=os.environ.get("OPENROUTER_API_KEY", ""))
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=256,
+        client = OpenAI(
+            api_key=os.environ.get("OPENROUTER_API_KEY", ""),
+            base_url="https://openrouter.ai/api/v1",
+        )
+
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-120b",
+            max_tokens=1024,
             messages=[
                 {
                     "role": "user",
@@ -30,8 +34,8 @@ def classify_ticket(title: str, description: str) -> dict:
                 }
             ],
         )
-        raw = message.content[0].text
-        result = json.loads(raw)
+
+        result = json.loads(response.choices[0].message.content)
 
         category = result.get("category")
         priority = result.get("priority")
