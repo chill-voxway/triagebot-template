@@ -1,6 +1,6 @@
 ---
 description: Detecta la siguiente iteración desarrollable del BACKLOG, la fichea (rama + Draft PR) para notificar al equipo, la implementa end-to-end y la marca como completada dejando el PR listo para revisar.
-allowed-tools: Bash(git switch:*), Bash(git pull:*), Bash(git fetch:*), Bash(git branch:*), Bash(git status:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo set-default:*), Bash(gh pr list:*), Bash(gh pr create:*), Bash(gh pr ready:*), Bash(gh pr view:*), Bash(pytest:*), Bash(ruff:*), Read, Edit, Write
+allowed-tools: Bash(git switch:*), Bash(git pull:*), Bash(git fetch:*), Bash(git branch:*), Bash(git status:*), Bash(git add:*), Bash(git commit:*), Bash(git push:*), Bash(gh repo set-default:*), Bash(gh pr list:*), Bash(gh pr create:*), Bash(gh pr ready:*), Bash(gh pr view:*), Bash(cp:*), Bash(py:*), Bash(pytest:*), Bash(ruff:*), Read, Edit, Write
 ---
 
 # /detectar-siguiente-iteracion
@@ -14,10 +14,34 @@ cogido es el remoto**, no el `BACKLOG.md` local.
 > comandos `gh pr *` deben llevar `-R Ceballooss/triagebot-Grupo06` para que el
 > PR sea interno a TU fork y NUNCA apunte al upstream.
 
+> 🐍 **Sin entornos virtuales (no venv).** La configuración vive en el `.env`
+> (copiado de `.env.example`). El intérprete es **SIEMPRE Python 3.12**,
+> referenciado por la variable **`PYTHON_BIN`** del `.env` (valor por defecto
+> `py -3.12`). TODO comando de Python se invoca como `$PYTHON_BIN -m <módulo>`
+> (p.ej. `py -3.12 -m pytest`). No uses 3.10 (sin `datetime.UTC`) ni 3.14 (no
+> instala el `pydantic-core` fijado sin Rust).
+
 Sigue las fases en orden. No te saltes el fichaje: hay que **notificar el inicio
 de desarrollo desde el primer instante**, antes de escribir código de feature.
 
-## Fase 0 — Sincronizar la verdad remota
+## Fase 0 — Preparar el entorno (`.env` + `PYTHON_BIN`)
+
+**Esto es lo PRIMERO de todo, antes incluso de mirar git.**
+
+1. Si **no existe** `.env` → `cp .env.example .env` y avisa al usuario de que
+   rellene `OPENROUTER_API_KEY` (sin ella el clasificador cae al fallback).
+2. Determina `PYTHON_BIN` leyéndolo del `.env` (por defecto `py -3.12`).
+   Verifica el intérprete: `py -3.12 --version` debe decir **3.12.x**. Si no hay
+   un Python 3.12 disponible → **DETENTE** e indica instalarlo
+   (`winget install --id Python.Python.3.12 -e`).
+3. Asegura las dependencias: `py -3.12 -m pip install -r requirements.txt`
+   (idempotente). **No se crea ningún venv.**
+4. Confirma que `.env` está gitignored (no se commitea nunca).
+
+A partir de aquí, **todo** `pytest`/`ruff`/`pip`/`uvicorn`/`python` usa
+`$PYTHON_BIN -m ...` (es decir, `py -3.12 -m ...`).
+
+## Fase 0.5 — Sincronizar la verdad remota
 
 1. Comprueba `git status`. Si el working tree está **sucio** o no estás en
    `main` → **DETENTE** e informa al usuario (no fiches encima de trabajo a
@@ -67,7 +91,7 @@ Esto ocurre **antes de escribir una sola línea de código de feature**:
 
 **Lock optimista:** si el `git push` se rechaza (non-fast-forward) o al re-listar
 PRs/ramas aparece que otra persona acaba de fichar esa misma iteración →
-**abandona el fichaje**, vuelve a `main`, re-ejecuta Fase 0–1 y elige otra
+**abandona el fichaje**, vuelve a `main`, re-ejecuta Fase 0.5–1 y elige otra
 iteración. Nunca pises trabajo ajeno.
 
 Confirma al usuario: rama creada + Draft PR abierto (con su URL). El equipo ya
@@ -80,11 +104,13 @@ está notificado.
 2. Implementa código y tests según la lista de tareas. **No modifiques
    `tests/test_acceptance.py`.**
 3. Commits pequeños y frecuentes (Conventional Commits).
-4. Ejecuta `ruff check .` y `pytest -v`. Itera hasta dejarlos en **verde**.
+4. Ejecuta `py -3.12 -m ruff check .` y `py -3.12 -m pytest -v` (es decir,
+   `$PYTHON_BIN -m ...`). Itera hasta dejarlos en **verde**. Si añades una
+   dependencia, fíjala en `requirements.txt` e instálala con `py -3.12 -m pip`.
 
 ## Fase 5 — Completar y dejar el PR listo
 
-1. Verifica el **criterio de completado** de la iteración (pytest verde, 0 fallos).
+1. Verifica el **criterio de completado** con `py -3.12 -m pytest -v` (verde, 0 fallos).
 2. Edita `BACKLOG.md`: marca las tareas de la historia como `[x]`, pon IT-N →
    **COMPLETADA** en la tabla global y avanza/limpia "Iteración activa".
 3. Edita `iteracion-0N.md`: `## Estado` → `COMPLETADA - <fecha de hoy>`.

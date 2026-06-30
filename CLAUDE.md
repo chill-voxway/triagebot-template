@@ -34,11 +34,17 @@ del equipo que seas.
 
 ## Comandos útiles
 
+> **Entorno: sin venv.** Intérprete fijo **Python 3.12** vía la variable
+> `PYTHON_BIN` (definida en `.env.example`, valor por defecto `py -3.12`). Copia
+> `.env` desde `.env.example` (`cp .env.example .env`) y rellena
+> `OPENROUTER_API_KEY`. Invoca todo como `$PYTHON_BIN -m ...` (= `py -3.12 -m ...`).
+
 ```bash
-pytest -v
-pytest --cov=app
-ruff check .
-uvicorn app.main:app --reload
+py -3.12 -m pip install -r requirements.txt
+py -3.12 -m pytest -v
+py -3.12 -m pytest --cov=app
+py -3.12 -m ruff check .
+py -3.12 -m uvicorn app.main:app --reload
 ```
 
 ## Política de ramas (Git workflow)
