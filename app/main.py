@@ -125,10 +125,32 @@ def _render_tablero(
 
 
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request, session: SessionDep) -> HTMLResponse:
-    """Página única: formulario + filtros + tablero (render inicial sin parpadeo)."""
-    tickets = _filtered_tickets(session, None, None, None)
-    return templates.TemplateResponse(request, "index.html", {"tickets": tickets})
+def index(
+    request: Request,
+    session: SessionDep,
+    category: str | None = None,
+    priority: str | None = None,
+    status: str | None = None,
+) -> HTMLResponse:
+    """Página única con filtros persistidos en la URL.
+
+    Acepta query params opcionales (vacío = sin filtrar). Pasa `filtros` a la
+    plantilla para marcar `selected` en los selects al recargar.
+    """
+    tickets = _filtered_tickets(
+        session,
+        _coerce_enum(Category, category),
+        _coerce_enum(Priority, priority),
+        _coerce_enum(Status, status),
+    )
+    filtros = {
+        "category": category or None,
+        "priority": priority or None,
+        "status": status or None,
+    }
+    return templates.TemplateResponse(
+        request, "index.html", {"tickets": tickets, "filtros": filtros}
+    )
 
 
 def _coerce_enum(enum_cls, value: str | None):

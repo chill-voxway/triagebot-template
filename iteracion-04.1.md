@@ -91,15 +91,15 @@ opción activa (y no "Todos").
 
 ## Tareas
 
-- [ ] `GET /` acepta `category`/`priority`/`status` opcionales: filtra `#tablero`
+- [x] `GET /` acepta `category`/`priority`/`status` opcionales: filtra `#tablero`
       y pasa el dict `filtros` a la plantilla (query solo con params con valor),
       reutilizando la función de filtrado existente
-- [ ] `templates/index.html`: cambiar los tres selects a `hx-get="/"`,
+- [x] `templates/index.html`: cambiar los tres selects a `hx-get="/"`,
       `hx-include="#filtros"`, `hx-target="#tablero"`, `hx-select="#tablero"`,
       `hx-swap="outerHTML"`, `hx-push-url="true"`, `hx-trigger="change"`
-- [ ] `templates/index.html`: marcar `selected` en cada `<option>` según `filtros`
-- [ ] No duplicar la consulta de filtrado (una sola función backend reutilizada)
-- [ ] No tocar `POST /tickets/crear` ni la creación de tickets
+- [x] `templates/index.html`: marcar `selected` en cada `<option>` según `filtros`
+- [x] No duplicar la consulta de filtrado (una sola función backend reutilizada)
+- [x] No tocar `POST /tickets/crear` ni la creación de tickets
 
 ## Ficheros afectados
 
@@ -110,14 +110,14 @@ opción activa (y no "Todos").
 
 `pytest` sigue verde, `ruff check .` limpio y se cumplen:
 
-- [ ] Al filtrar, la barra de direcciones pasa a `/?...` con los filtros activos
+- [x] Al filtrar, la barra de direcciones pasa a `/?...` con los filtros activos
       (nunca a `/tickets/tablero?...`).
-- [ ] Al refrescar con filtros aplicados: el tablero sale filtrado y los tres
+- [x] Al refrescar con filtros aplicados: el tablero sale filtrado y los tres
       selects muestran la opción correcta.
-- [ ] El botón "atrás/adelante" y un enlace copiado reproducen el mismo estado.
-- [ ] No se establece ninguna cabecera de respuesta, ni se usa
+- [x] El botón "atrás/adelante" y un enlace copiado reproducen el mismo estado.
+- [x] No se establece ninguna cabecera de respuesta, ni se usa
       `localStorage`/`sessionStorage`, ni JavaScript manual.
 
 ## Estado
 
-PENDIENTE
+COMPLETADA - 2026-06-30
