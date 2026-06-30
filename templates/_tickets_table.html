@@ -1,6 +1,4 @@
-{# Parcial reutilizable del tablero: tabla con una fila por ticket, o estado
-   vacío. Lo incluye `index.html` (render inicial) y lo devuelven los endpoints
-   `GET /tickets/tablero` y `POST /tickets/crear` (refresco vía HTMX). #}
+{# Tablero kanban con 4 columnas de estado. Parcial reutilizable. #}
 {% set category_classes = {
   "bug": "bg-red-100 text-red-800",
   "feature_request": "bg-blue-100 text-blue-800",
@@ -12,11 +10,6 @@
   "P2": "bg-amber-500 text-white",
   "P3": "bg-emerald-600 text-white"
 } %}
-{% set status_classes = {
-  "open": "bg-slate-100 text-slate-700",
-  "in_progress": "bg-blue-100 text-blue-800",
-  "closed": "bg-emerald-100 text-emerald-800"
-} %}
 
 {% if error %}
 <div class="mb-3 rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200">
@@ -24,53 +17,107 @@
 </div>
 {% endif %}
 
-<table class="min-w-full divide-y divide-slate-200 bg-white shadow-sm ring-1 ring-slate-200 rounded-lg overflow-hidden">
-  <thead class="bg-slate-100">
-    <tr>
-      <th class="px-3 py-2 text-left text-sm font-semibold">ID</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Título</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Categoría</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Prioridad</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Tags</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Estado</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Creado</th>
-    </tr>
-  </thead>
-  <tbody id="tickets-table-body" class="divide-y divide-slate-100">
-    {% for ticket in tickets %}
-    <tr>
-      <td class="px-3 py-2 text-sm text-slate-500">{{ ticket.id }}</td>
-      <td class="px-3 py-2 text-sm font-medium">{{ ticket.title }}</td>
-      <td class="px-3 py-2 text-sm">
-        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {{ category_classes.get(ticket.category.value, 'bg-slate-100 text-slate-700') }}">
+{% set cols = [
+  ("open",        "Abierto",  "bg-slate-100  border-slate-300"),
+  ("in_progress", "En Curso", "bg-blue-50    border-blue-300"),
+  ("resuelto",    "Resuelto", "bg-emerald-50 border-emerald-300"),
+  ("closed",      "Cerrado",  "bg-zinc-100   border-zinc-300")
+] %}
+
+<div id="tablero" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+{% for estado_val, label, col_cls in cols %}
+  {% set col_tickets = tickets | selectattr("status.value", "equalto", estado_val) | list %}
+  <div class="rounded-lg border {{ col_cls }} p-3 space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 class="font-semibold text-sm">{{ label }}</h3>
+      <span class="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+        {{ col_tickets | length }}
+      </span>
+    </div>
+
+    {% for ticket in col_tickets %}
+    <div class="rounded-md bg-white shadow-sm ring-1 ring-slate-200 p-3 space-y-2
+                {% if ticket.esta_vencido %}ring-red-400 ring-2{% endif %}">
+
+      {# Encabezado: id + título #}
+      <div class="flex items-start justify-between gap-1">
+        <span class="text-xs text-slate-400">#{{ ticket.id }}</span>
+        {% if ticket.esta_vencido %}
+        <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+          Vencido
+        </span>
+        {% endif %}
+      </div>
+      <p class="text-sm font-medium leading-snug">{{ ticket.title }}</p>
+
+      {# Badges categoría + prioridad #}
+      <div class="flex flex-wrap gap-1">
+        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium
+                     {{ category_classes.get(ticket.category.value, 'bg-slate-100 text-slate-700') }}">
           {{ ticket.category.value }}
         </span>
-      </td>
-      <td class="px-3 py-2 text-sm">
-        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-semibold {{ priority_classes.get(ticket.priority.value, 'bg-slate-500 text-white') }}">
+        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-semibold
+                     {{ priority_classes.get(ticket.priority.value, 'bg-slate-500 text-white') }}">
           {{ ticket.priority.value }}
         </span>
-      </td>
-      <td class="px-3 py-2 text-sm">
-        <div class="flex flex-wrap gap-1">
-          {% for tag in ticket.tags %}
-          <span class="inline-block rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{{ tag }}</span>
-          {% endfor %}
-        </div>
-      </td>
-      <td class="px-3 py-2 text-sm">
-        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium {{ status_classes.get(ticket.status.value, 'bg-slate-100 text-slate-700') }}">
-          {{ ticket.status.value }}
-        </span>
-      </td>
-      <td class="px-3 py-2 text-sm text-slate-500">{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-    </tr>
+      </div>
+
+      {# Tags #}
+      {% if ticket.tags %}
+      <div class="flex flex-wrap gap-1">
+        {% for tag in ticket.tags %}
+        <span class="inline-block rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# Fecha límite #}
+      {% if ticket.fecha_limite %}
+      <p class="text-xs {% if ticket.esta_vencido %}text-red-600 font-semibold{% else %}text-slate-500{% endif %}">
+        Límite: {{ ticket.fecha_limite.strftime('%d/%m %H:%M') }}
+      </p>
+      {% endif %}
+
+      {# Tiempo en estado actual #}
+      <p class="text-xs text-slate-400 italic">{{ label }} desde hace {{ ticket.tiempo_en_estado_actual }}</p>
+
+      {# Botones de transición #}
+      <div class="pt-1">
+        {% if ticket.status.value == "open" %}
+        <form hx-post="/tickets/{{ ticket.id }}/transicion"
+              hx-target="#tablero" hx-swap="innerHTML">
+          <input type="hidden" name="nuevo_estado" value="in_progress">
+          <button type="submit"
+                  class="w-full rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700">
+            Comenzar
+          </button>
+        </form>
+
+        {% elif ticket.status.value == "in_progress" %}
+        <form hx-post="/tickets/{{ ticket.id }}/transicion"
+              hx-target="#tablero" hx-swap="innerHTML">
+          <input type="hidden" name="nuevo_estado" value="resuelto">
+          <button type="submit"
+                  class="w-full rounded bg-emerald-600 px-2 py-1 text-xs font-medium text-white hover:bg-emerald-700">
+            Resolver
+          </button>
+        </form>
+
+        {% elif ticket.status.value in ("resuelto", "closed") %}
+        <form hx-post="/tickets/{{ ticket.id }}/transicion"
+              hx-target="#tablero" hx-swap="innerHTML">
+          <input type="hidden" name="nuevo_estado" value="open">
+          <button type="submit"
+                  class="w-full rounded bg-slate-500 px-2 py-1 text-xs font-medium text-white hover:bg-slate-600">
+            Reabrir
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
     {% else %}
-    <tr>
-      <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
-        No hay tickets que coincidan
-      </td>
-    </tr>
+    <p class="text-xs text-slate-400 text-center py-4">Sin tickets</p>
     {% endfor %}
-  </tbody>
-</table>
+  </div>
+{% endfor %}
+</div>

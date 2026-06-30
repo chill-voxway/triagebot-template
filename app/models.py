@@ -1,12 +1,12 @@
 """Modelo de dominio de TriageBot.
 
-Define la entidad `Ticket` (SQLModel, tabla SQLite) y los enums vinculantes
+Define la entidad `Ticket` (SQLModel) y los enums vinculantes
 de `category`, `priority` y `status` según `SPEC.md` §3.
 """
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 
 from pydantic import field_validator
@@ -33,12 +33,16 @@ class Priority(str, Enum):
 
 
 class Status(str, Enum):
-    """Estados permitidos para un ticket."""
+    """Estados permitidos para un ticket (IT-5: ciclo de vida ampliado)."""
 
     open = "open"
     in_progress = "in_progress"
+    resuelto = "resuelto"
     closed = "closed"
 
+
+# Estados que indican que el ticket ya está finalizado (no cuenta como vencido).
+ESTADOS_FINALES = {Status.resuelto, Status.closed}
 
 # Conjuntos derivados de los enums; útiles para validar la salida del
 # clasificador (iteración 2) sin acoplarlo al modelo ORM.
@@ -58,8 +62,23 @@ MAX_TAG_LENGTH = 30
 
 def utcnow() -> datetime:
     """Timestamp UTC generado en servidor."""
-
     return datetime.now(UTC)
+
+
+def _utcnow_naive() -> datetime:
+    """UTC actual como datetime naive para comparar con valores de SQLite."""
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
+def calcular_fecha_limite(priority: Priority) -> datetime:
+    """Fecha límite (naive UTC) según prioridad.
+
+    P1 -> EoD hoy · P2 -> EoD mañana · P3 -> EoD pasado mañana.
+    Naive para compatibilidad con SQLite.
+    """
+    offsets = {Priority.P1: 0, Priority.P2: 1, Priority.P3: 2}
+    target = (datetime.now(UTC) + timedelta(days=offsets[priority])).date()
+    return datetime(target.year, target.month, target.day, 23, 59, 59)
 
 
 class Ticket(SQLModel, table=True):
@@ -74,6 +93,10 @@ class Ticket(SQLModel, table=True):
     status: Status = Field(default=Status.open)
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
+    # IT-5 TRABAJO 1: plazos y alertas
+    fecha_limite: datetime | None = Field(default=None)
+    # IT-5 TRABAJO 2: ciclo de vida
+    fecha_cambio_estado: datetime | None = Field(default=None)
 
     @field_validator("tags")
     @classmethod
@@ -86,3 +109,30 @@ class Ticket(SQLModel, table=True):
             if len(tag) > MAX_TAG_LENGTH:
                 raise ValueError(f"Cada tag admite como máximo {MAX_TAG_LENGTH} caracteres")
         return value
+
+    @property
+    def esta_vencido(self) -> bool:
+        """True si el ticket ha superado su fecha límite y no está finalizado."""
+        if self.fecha_limite is None or self.status in ESTADOS_FINALES:
+            return False
+        fl = self.fecha_limite
+        if fl.tzinfo:
+            fl = fl.replace(tzinfo=None)
+        return _utcnow_naive() > fl
+
+    @property
+    def tiempo_en_estado_actual(self) -> str:
+        """Tiempo legible transcurrido desde el último cambio de estado."""
+        ref = self.fecha_cambio_estado or self.created_at
+        if ref is None:
+            return "desconocido"
+        ref_naive = ref.replace(tzinfo=None) if ref.tzinfo else ref
+        secs = max(0, int((_utcnow_naive() - ref_naive).total_seconds()))
+        if secs < 3600:
+            mins = max(1, secs // 60)
+            return f"{mins} min"
+        elif secs < 86400:
+            return f"{secs // 3600} h"
+        else:
+            days = secs // 86400
+            return f"{days} {'día' if days == 1 else 'días'}"

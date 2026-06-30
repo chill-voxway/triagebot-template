@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterator
 
+from sqlalchemy import text
 from sqlmodel import Session, SQLModel, create_engine
 
 # Importa los modelos para que queden registrados en `SQLModel.metadata`
@@ -56,11 +57,23 @@ def get_engine():
 engine = get_engine()
 
 
+def _migrate_columns(eng) -> None:
+    """Añade las columnas de IT-5 si la tabla ya existía sin ellas."""
+    with eng.connect() as conn:
+        cols = {row[1] for row in conn.execute(text("PRAGMA table_info(ticket)"))}
+        if "fecha_limite" not in cols:
+            conn.execute(text("ALTER TABLE ticket ADD COLUMN fecha_limite DATETIME"))
+        if "fecha_cambio_estado" not in cols:
+            conn.execute(text("ALTER TABLE ticket ADD COLUMN fecha_cambio_estado DATETIME"))
+        conn.commit()
+
+
 def _ensure_tables(eng) -> None:
-    """Crea las tablas una sola vez por engine (idempotente y sin coste repetido)."""
+    """Crea las tablas una sola vez por engine y migra columnas nuevas."""
 
     if eng not in _initialized:
         SQLModel.metadata.create_all(eng)
+        _migrate_columns(eng)
         _initialized.add(eng)
 
 
