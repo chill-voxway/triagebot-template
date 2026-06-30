@@ -11,11 +11,11 @@
 |-----------|-------------|--------|
 | [IT-1](#iteración-1) | Modelo de datos y persistencia | COMPLETADA |
 | [IT-2](#iteración-2) | Clasificador LLM | COMPLETADA |
-| [IT-3](#iteración-3) | API REST | EN PROGRESO |
+| [IT-3](#iteración-3) | API REST | COMPLETADA |
 | [IT-4](#iteración-4) | Frontend | PENDIENTE |
 | [IT-5](#iteración-5) | Calidad y entrega | PENDIENTE |
 
-**Iteración activa:** IT-3 — API REST
+**Iteración activa:** — (ninguna EN PROGRESO; siguiente candidata: IT-4)
 
 > Un estado `EN PROGRESO` siempre está respaldado por una rama remota
 > `feat/iteracion-XX` + un Draft PR en `Ceballooss/triagebot-Grupo06`. Esa es la
@@ -60,32 +60,32 @@ Fallback: `{"category": "question", "priority": "P3", "tags": []}`
 ### Historia 3.1 — `POST /tickets`
 **Iteración:** IT-3 | **Depende de:** H1.1, H2.1 | **Bloqueada por:** H2.1
 
-- [ ] Acepta `{title, description}`, llama a `classify_ticket`, persiste y devuelve `201`
-- [ ] `422` si `title` o `description` vacíos o fuera de límite
-- [ ] Nunca `5xx` por fallo del LLM
+- [x] Acepta `{title, description}`, llama a `classify_ticket`, persiste y devuelve `201`
+- [x] `422` si `title` o `description` vacíos o fuera de límite
+- [x] Nunca `5xx` por fallo del LLM
 
 **Criterio de aceptación:** `test_post_ticket_creates_with_classification` verde · `test_post_ticket_empty_title_returns_422` verde.
 
 ### Historia 3.2 — `GET /tickets`
 **Iteración:** IT-3 | **Depende de:** H1.1 | **Bloqueada por:** H1.1
 
-- [ ] Lista tickets ordenados por `created_at` desc
-- [ ] Filtros opcionales: `category`, `priority`, `status`
+- [x] Lista tickets ordenados por `created_at` desc
+- [x] Filtros opcionales: `category`, `priority`, `status`
 
 **Criterio de aceptación:** `test_get_tickets_returns_list` verde.
 
 ### Historia 3.3 — `GET /tickets/{id}`
 **Iteración:** IT-3 | **Depende de:** H1.1 | **Bloqueada por:** H1.1
 
-- [ ] `200` con ticket si existe; `404` si no
+- [x] `200` con ticket si existe; `404` si no
 
 **Criterio de aceptación:** `test_get_ticket_by_id_not_found` verde.
 
 ### Historia 3.4 — `PATCH /tickets/{id}`
 **Iteración:** IT-3 | **Depende de:** H1.1 | **Bloqueada por:** H1.1
 
-- [ ] Actualiza solo `status` y/o `priority`
-- [ ] `404` si no existe; `422` si valor fuera de enum
+- [x] Actualiza solo `status` y/o `priority`
+- [x] `404` si no existe; `422` si valor fuera de enum
 
 **Criterio de aceptación:** PATCH inválido → `422`; PATCH válido → `200` con ticket actualizado.
 

@@ -21,11 +21,11 @@ Según `SPEC.md` §4:
   `422` si fuera de enum; actualiza `updated_at`.
 
 ## Tareas
-- [ ] `POST /tickets` con validación (Pydantic) y clasificación síncrona
-- [ ] `GET /tickets` con filtros combinables
-- [ ] `GET /tickets/{id}` con `404`
-- [ ] `PATCH /tickets/{id}` (status/priority) con `404`/`422`
-- [ ] Asegurar `create_db_and_tables()` en startup
+- [x] `POST /tickets` con validación (Pydantic) y clasificación síncrona
+- [x] `GET /tickets` con filtros combinables
+- [x] `GET /tickets/{id}` con `404`
+- [x] `PATCH /tickets/{id}` (status/priority) con `404`/`422`
+- [x] Asegurar `create_db_and_tables()` en startup
 
 ## Ficheros afectados
 - `app/main.py`
@@ -37,4 +37,4 @@ Según `SPEC.md` §4:
 y `test_update_ticket_and_filter_by_status_priority_category` verdes. 0 fallos.
 
 ## Estado
-EN PROGRESO
+COMPLETADA - 2026-06-30
