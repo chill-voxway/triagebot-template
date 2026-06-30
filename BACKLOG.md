@@ -14,9 +14,10 @@
 | [IT-3](#iteración-3) | API REST | COMPLETADA |
 | [IT-4](#iteración-4) | Frontend | COMPLETADA |
 | [IT-4.1](#iteración-4) | Frontend · persistencia de filtros en URL | COMPLETADA |
-| [IT-5](#iteración-5) | Calidad y entrega | PENDIENTE |
+| [IT-5](#iteración-5) | Nuevas funcionalidades (plazos + ciclo de vida) | COMPLETADA |
+| [IT-6](#iteración-6) | Calidad y entrega | PENDIENTE |
 
-**Iteración activa:** — (ninguna EN PROGRESO; siguiente candidata: IT-5)
+**Iteración activa:** IT-5 (feat/iteracion-05 · PR #16)
 
 > Un estado `EN PROGRESO` siempre está respaldado por una rama remota
 > `feat/iteracion-XX` + un Draft PR en `Ceballooss/triagebot-Grupo06`. Esa es la
@@ -119,22 +120,60 @@ Fallback: `{"category": "question", "priority": "P3", "tags": []}`
 
 ---
 
-## Épica 5 — Calidad y entrega
+## Épica 5 — Nuevas funcionalidades (plazos + ciclo de vida)
 
-### Historia 5.1 — Tests verdes
-**Iteración:** IT-5 | **Depende de:** H3.1–H3.4, H2.1 | **Bloqueada por:** IT-3
+### Historia 5.1 — Gestión de plazos y alertas de vencimiento
+**Iteración:** IT-5 | **Depende de:** H4.1, H4.2 | **Bloqueada por:** IT-4.1
+**Rama:** `feature/plazos-tickets`
+
+- [x] Campo `fecha_limite` (DateTime UTC) en `app/models.py`; calculado al crear según prioridad (P1=EoD, P2=+24 h, P3=+48 h)
+- [x] Propiedad `esta_vencido` en el modelo (compara `fecha_limite` con `utcnow()` si no finalizado)
+- [x] Columna `fecha_limite` en esquema (`app/db.py`); `create_ticket`/`update_ticket` la mapean
+- [x] `GET /tickets` acepta `?vencidos=true` y filtra tickets caducados no cerrados
+
+### Historia 5.2 — Frontend de plazos
+**Iteración:** IT-5 | **Depende de:** H5.1 | **Bloqueada por:** H5.1
+
+- [x] `templates/index.html`: mostrar `fecha_limite` formateada en la tarjeta
+- [x] Badge/clase CSS "Vencido" cuando `ticket.esta_vencido` es verdadero
+- [x] Botón/checkbox de alternancia que filtra vía `?vencidos=true`
+
+### Historia 5.3 — Ciclo de vida y tiempos de estado
+**Iteración:** IT-5 | **Depende de:** H4.1, H4.2 | **Bloqueada por:** IT-4.1
+**Rama:** `feature/ciclo-vida-tickets`
+
+- [x] Ampliar enum `status` a: `open`, `in_progress`, `resuelto`, `closed`
+- [x] Campo `fecha_cambio_estado` (DateTime UTC) en `app/models.py`; se actualiza en cada cambio de estado
+- [x] Propiedad `tiempo_en_estado_actual` que devuelve texto legible (min/h/días)
+- [x] Máquina de estados con reapertura explícita (`resuelto`/`cerrado` → `open`)
+- [x] Columna `fecha_cambio_estado` en esquema (`app/db.py`); forzar `= utcnow()` al cambiar estado
+- [x] Handler `GET /tickets` expone `tiempo_en_estado_actual` a la plantilla
+
+### Historia 5.4 — Frontend de ciclo de vida
+**Iteración:** IT-5 | **Depende de:** H5.3 | **Bloqueada por:** H5.3
+
+- [x] Tablero reorganizado en 4 columnas: *Abierto*, *En Curso*, *Resuelto*, *Cerrado*
+- [x] Métrica de tiempo en cada tarjeta (ej. `"En curso desde hace 45 min"`)
+- [x] Botones condicionales: "Comenzar" (open→in_progress), "Resolver" (in_progress→resuelto), "Reabrir" (resuelto/closed→open)
+
+---
+
+## Épica 6 — Calidad y entrega
+
+### Historia 6.1 — Tests verdes
+**Iteración:** IT-6 | **Depende de:** H5.1–H5.4 | **Bloqueada por:** IT-5
 
 - [ ] Los 5 tests de `tests/test_acceptance.py` pasan (`pytest -v`)
 - [ ] `ruff check .` sin errores
 
-### Historia 5.2 — CI en GitHub Actions
-**Iteración:** IT-5 | **Depende de:** H5.1 | **Bloqueada por:** H5.1
+### Historia 6.2 — CI en GitHub Actions
+**Iteración:** IT-6 | **Depende de:** H6.1 | **Bloqueada por:** H6.1
 
 - [ ] Workflow `.github/workflows/ci.yml`: ruff + pytest en cada push a `main`
 - [ ] Badge de estado en `README.md`
 
-### Historia 5.3 — README
-**Iteración:** IT-5 | **Depende de:** — | **Bloqueada por:** —
+### Historia 6.3 — README
+**Iteración:** IT-6 | **Depende de:** — | **Bloqueada por:** —
 
 - [ ] Instrucciones de arranque: clonar, crear `.env`, `uvicorn app.main:app --reload`
 - [ ] Prerequisitos: Python 3.11+, `pip install -r requirements.txt`
@@ -149,5 +188,6 @@ IT-1 (modelos)
         └── IT-3 (API REST)  ←── también depende de IT-1
               └── IT-4 (frontend)
                     └── IT-4.1 (persistencia de filtros en URL)
-                          └── IT-5 (calidad y entrega)
+                          └── IT-5 (plazos + ciclo de vida)  ← paralelo: feature/plazos-tickets | feature/ciclo-vida-tickets
+                                └── IT-6 (calidad y entrega)
 ```

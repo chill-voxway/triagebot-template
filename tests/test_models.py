@@ -11,7 +11,7 @@ def test_models_import_without_error():
 
     assert {c.value for c in Category} == {"bug", "feature_request", "question", "urgent"}
     assert {p.value for p in Priority} == {"P1", "P2", "P3"}
-    assert {s.value for s in Status} == {"open", "in_progress", "closed"}
+    assert {s.value for s in Status} == {"open", "in_progress", "resuelto", "closed"}
     assert Ticket is not None
 
 

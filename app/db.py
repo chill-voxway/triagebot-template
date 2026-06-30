@@ -9,6 +9,8 @@ from __future__ import annotations
 import os
 from collections.abc import Iterator
 
+from sqlalchemy import event, text
+from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine
 
 # Importa los modelos para que queden registrados en `SQLModel.metadata`
@@ -20,6 +22,15 @@ DEFAULT_DATABASE_URL = "sqlite:///triagebot.db"
 
 def _database_url() -> str:
     return os.environ.get("DATABASE_URL", DEFAULT_DATABASE_URL)
+
+
+@event.listens_for(Engine, "connect")
+def _set_sqlite_pragmas(dbapi_conn, _record) -> None:
+    """WAL mode + busy timeout para tolerar escrituras concurrentes en SQLite."""
+    cursor = dbapi_conn.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA busy_timeout=5000")
+    cursor.close()
 
 
 def _make_engine(url: str):
@@ -56,11 +67,23 @@ def get_engine():
 engine = get_engine()
 
 
+def _migrate_columns(eng) -> None:
+    """Añade las columnas de IT-5 si la tabla ya existía sin ellas."""
+    with eng.connect() as conn:
+        cols = {row[1] for row in conn.execute(text("PRAGMA table_info(ticket)"))}
+        if "fecha_limite" not in cols:
+            conn.execute(text("ALTER TABLE ticket ADD COLUMN fecha_limite DATETIME"))
+        if "fecha_cambio_estado" not in cols:
+            conn.execute(text("ALTER TABLE ticket ADD COLUMN fecha_cambio_estado DATETIME"))
+        conn.commit()
+
+
 def _ensure_tables(eng) -> None:
-    """Crea las tablas una sola vez por engine (idempotente y sin coste repetido)."""
+    """Crea las tablas una sola vez por engine y migra columnas nuevas."""
 
     if eng not in _initialized:
         SQLModel.metadata.create_all(eng)
+        _migrate_columns(eng)
         _initialized.add(eng)
 
 
