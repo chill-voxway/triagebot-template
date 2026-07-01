@@ -8,11 +8,88 @@
   <script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
 <body class="bg-slate-50 text-slate-900">
-  <main class="mx-auto max-w-6xl p-6">
-    <h1 class="text-3xl font-bold">TriageBot</h1>
-    <p class="mt-2 text-slate-600">Tablero de incidencias con clasificación automática por IA.</p>
+  <main class="mx-auto max-w-7xl p-6 space-y-8">
+    <header>
+      <h1 class="text-3xl font-bold">TriageBot</h1>
+      <p class="mt-2 text-slate-600">Tablero de incidencias con clasificación automática por IA.</p>
+    </header>
 
-    <!-- TODO: formulario + filtros + tabla HTMX -->
+    <!-- Bloque 1 · Formulario de creación -->
+    <section class="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 p-5">
+      <h2 class="text-lg font-semibold mb-3">Crear ticket</h2>
+      <form hx-post="/tickets/crear"
+            hx-target="#tablero"
+            hx-swap="outerHTML"
+            hx-on::after-request="if (event.detail.successful) this.reset()"
+            class="space-y-3">
+        <input type="text" name="title" placeholder="Título" required
+               class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <textarea name="description" placeholder="Descripción" required rows="3"
+                  class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <button type="submit"
+                class="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700">
+          Crear ticket
+        </button>
+      </form>
+    </section>
+
+    <!-- Bloque 2 · Filtros -->
+    <section class="bg-white rounded-lg shadow-sm ring-1 ring-slate-200 p-5">
+      <h2 class="text-lg font-semibold mb-3">Filtros</h2>
+      <form id="filtros" class="flex flex-wrap gap-3 items-center">
+        <select name="category"
+                hx-get="/" hx-include="#filtros" hx-target="#tablero"
+                hx-select="#tablero" hx-swap="outerHTML" hx-push-url="true"
+                hx-trigger="change"
+                class="rounded-md border border-slate-300 px-3 py-2">
+          <option value="">Todas las categorías</option>
+          <option value="bug" {% if filtros.category == "bug" %}selected{% endif %}>bug</option>
+          <option value="feature_request" {% if filtros.category == "feature_request" %}selected{% endif %}>feature_request</option>
+          <option value="question" {% if filtros.category == "question" %}selected{% endif %}>question</option>
+          <option value="urgent" {% if filtros.category == "urgent" %}selected{% endif %}>urgent</option>
+        </select>
+
+        <select name="priority"
+                hx-get="/" hx-include="#filtros" hx-target="#tablero"
+                hx-select="#tablero" hx-swap="outerHTML" hx-push-url="true"
+                hx-trigger="change"
+                class="rounded-md border border-slate-300 px-3 py-2">
+          <option value="">Todas las prioridades</option>
+          <option value="P1" {% if filtros.priority == "P1" %}selected{% endif %}>P1</option>
+          <option value="P2" {% if filtros.priority == "P2" %}selected{% endif %}>P2</option>
+          <option value="P3" {% if filtros.priority == "P3" %}selected{% endif %}>P3</option>
+        </select>
+
+        <select name="status"
+                hx-get="/" hx-include="#filtros" hx-target="#tablero"
+                hx-select="#tablero" hx-swap="outerHTML" hx-push-url="true"
+                hx-trigger="change"
+                class="rounded-md border border-slate-300 px-3 py-2">
+          <option value="">Todos los estados</option>
+          <option value="open" {% if filtros.status == "open" %}selected{% endif %}>Abierto</option>
+          <option value="in_progress" {% if filtros.status == "in_progress" %}selected{% endif %}>En Curso</option>
+          <option value="resuelto" {% if filtros.status == "resuelto" %}selected{% endif %}>Resuelto</option>
+          <option value="closed" {% if filtros.status == "closed" %}selected{% endif %}>Cerrado</option>
+        </select>
+
+        <!-- Filtro de vencidos -->
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" name="vencidos" value="true"
+                 {% if filtros.vencidos == "true" %}checked{% endif %}
+                 hx-get="/" hx-include="#filtros" hx-target="#tablero"
+                 hx-select="#tablero" hx-swap="outerHTML" hx-push-url="true"
+                 hx-trigger="change"
+                 class="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500">
+          <span class="text-sm font-medium text-red-700">Solo vencidos</span>
+        </label>
+      </form>
+    </section>
+
+    <!-- Bloque 3 · Tablero — sin wrapper extra; #tablero lo define _tickets_table.html -->
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Tablero</h2>
+      {% include "_tickets_table.html" %}
+    </section>
   </main>
 </body>
 </html>

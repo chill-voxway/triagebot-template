@@ -1,16 +1,138 @@
-<table class="min-w-full divide-y divide-slate-200 bg-white shadow-sm ring-1 ring-slate-200 rounded-lg overflow-hidden">
-  <thead class="bg-slate-100">
-    <tr>
-      <th class="px-3 py-2 text-left text-sm font-semibold">ID</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Título</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Categoría</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Prioridad</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Tags</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Estado</th>
-      <th class="px-3 py-2 text-left text-sm font-semibold">Creado</th>
-    </tr>
-  </thead>
-  <tbody id="tickets-table-body">
-    <!-- TODO: renderizar tickets con Jinja2 -->
-  </tbody>
-</table>
+{# Tablero kanban 4 columnas. Este parcial ES el elemento #tablero:
+   todo swap que lo reemplace debe usar hx-swap="outerHTML". #}
+{% set category_classes = {
+  "bug": "bg-red-100 text-red-800",
+  "feature_request": "bg-blue-100 text-blue-800",
+  "question": "bg-slate-100 text-slate-700",
+  "urgent": "bg-orange-100 text-orange-800"
+} %}
+{% set priority_classes = {
+  "P1": "bg-red-600 text-white",
+  "P2": "bg-amber-500 text-white",
+  "P3": "bg-emerald-600 text-white"
+} %}
+
+{% if error %}
+<div class="mb-3 rounded-md bg-red-50 px-4 py-3 text-sm text-red-800 ring-1 ring-red-200">
+  {{ error }}
+</div>
+{% endif %}
+
+{% set cols = [
+  ("open",        "Abierto",  "bg-slate-100  border-slate-300"),
+  ("in_progress", "En Curso", "bg-blue-50    border-blue-300"),
+  ("resuelto",    "Resuelto", "bg-emerald-50 border-emerald-300"),
+  ("closed",      "Cerrado",  "bg-zinc-100   border-zinc-300")
+] %}
+
+<div id="tablero" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+{% for estado_val, label, col_cls in cols %}
+  {% set col_tickets = tickets | selectattr("status.value", "equalto", estado_val) | list %}
+  <div class="rounded-lg border {{ col_cls }} p-3 space-y-3 min-h-[12rem]">
+    <div class="flex items-center justify-between">
+      <h3 class="font-semibold text-sm">{{ label }}</h3>
+      <span class="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200">
+        {{ col_tickets | length }}
+      </span>
+    </div>
+
+    {% for ticket in col_tickets %}
+    <div class="rounded-md bg-white shadow-sm p-3 space-y-2
+                {% if ticket.esta_vencido %}ring-2 ring-red-400{% else %}ring-1 ring-slate-200{% endif %}">
+
+      <div class="flex items-start justify-between gap-1">
+        <span class="text-xs text-slate-400">#{{ ticket.id }}</span>
+        {% if ticket.esta_vencido %}
+        <span class="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+          Vencido
+        </span>
+        {% endif %}
+      </div>
+
+      <p class="text-sm font-medium leading-snug">{{ ticket.title }}</p>
+
+      <div class="flex flex-wrap gap-1">
+        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium
+                     {{ category_classes.get(ticket.category.value, 'bg-slate-100 text-slate-700') }}">
+          {{ ticket.category.value }}
+        </span>
+        <span class="inline-block rounded-full px-2 py-0.5 text-xs font-semibold
+                     {{ priority_classes.get(ticket.priority.value, 'bg-slate-500 text-white') }}">
+          {{ ticket.priority.value }}
+        </span>
+      </div>
+
+      {% if ticket.tags %}
+      <div class="flex flex-wrap gap-1">
+        {% for tag in ticket.tags %}
+        <span class="inline-block rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700">{{ tag }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if ticket.fecha_limite %}
+      <p class="text-xs {% if ticket.esta_vencido %}text-red-600 font-semibold{% else %}text-slate-500{% endif %}">
+        Límite: {{ ticket.fecha_limite.strftime('%d/%m %H:%M') }}
+      </p>
+      {% endif %}
+
+      <p class="text-xs text-slate-400 italic">{{ label }} desde hace {{ ticket.tiempo_en_estado_actual }}</p>
+
+      {# Botones de transición de estado #}
+      <div class="pt-1 flex gap-1">
+        {% if ticket.status.value == "open" %}
+          <form hx-post="/tickets/{{ ticket.id }}/transicion"
+                hx-target="#tablero" hx-swap="outerHTML" class="w-full">
+            <input type="hidden" name="nuevo_estado" value="in_progress">
+            <button type="submit"
+                    class="w-full rounded bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700">
+              Comenzar
+            </button>
+          </form>
+
+        {% elif ticket.status.value == "in_progress" %}
+          <form hx-post="/tickets/{{ ticket.id }}/transicion"
+                hx-target="#tablero" hx-swap="outerHTML" class="w-full">
+            <input type="hidden" name="nuevo_estado" value="resuelto">
+            <button type="submit"
+                    class="w-full rounded bg-emerald-600 px-2 py-1 text-xs font-medium text-white hover:bg-emerald-700">
+              Resolver
+            </button>
+          </form>
+
+        {% elif ticket.status.value == "resuelto" %}
+          <form hx-post="/tickets/{{ ticket.id }}/transicion"
+                hx-target="#tablero" hx-swap="outerHTML" class="flex-1">
+            <input type="hidden" name="nuevo_estado" value="closed">
+            <button type="submit"
+                    class="w-full rounded bg-zinc-600 px-2 py-1 text-xs font-medium text-white hover:bg-zinc-700">
+              Cerrar
+            </button>
+          </form>
+          <form hx-post="/tickets/{{ ticket.id }}/transicion"
+                hx-target="#tablero" hx-swap="outerHTML" class="flex-1">
+            <input type="hidden" name="nuevo_estado" value="open">
+            <button type="submit"
+                    class="w-full rounded bg-slate-500 px-2 py-1 text-xs font-medium text-white hover:bg-slate-600">
+              Reabrir
+            </button>
+          </form>
+
+        {% elif ticket.status.value == "closed" %}
+          <form hx-post="/tickets/{{ ticket.id }}/transicion"
+                hx-target="#tablero" hx-swap="outerHTML" class="w-full">
+            <input type="hidden" name="nuevo_estado" value="open">
+            <button type="submit"
+                    class="w-full rounded bg-slate-500 px-2 py-1 text-xs font-medium text-white hover:bg-slate-600">
+              Reabrir
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <p class="text-xs text-slate-400 text-center py-4">Sin tickets</p>
+    {% endfor %}
+  </div>
+{% endfor %}
+</div>

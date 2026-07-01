@@ -21,31 +21,33 @@ TriageBot permite:
 
 | Capa | Herramienta |
 |---|---|
-| Lenguaje | Python 3.11+ |
+| Lenguaje | Python 3.12 (fijo, vía `PYTHON_BIN`) |
 | Backend | FastAPI |
 | Datos | SQLite |
 | Frontend | HTML + HTMX + Tailwind CDN |
-| LLM | Claude vía API de Anthropic |
+| LLM | `openai/gpt-oss-120b` vía OpenRouter |
 | Tests | pytest |
 | CI/CD | GitHub Actions |
 | IDE + IA | VS Code + Claude Code |
 
 ## Setup local
 
+> **Sin entornos virtuales.** Este proyecto usa **siempre Python 3.12** (no 3.10
+> —le falta `datetime.UTC`— ni 3.14 —no instala el `pydantic-core` fijado sin
+> Rust). El intérprete se referencia con la variable **`PYTHON_BIN`** definida en
+> `.env.example` (valor por defecto `py -3.12` con el py launcher de Windows).
+
 ```bash
 git clone https://github.com/<tu-usuario>/triagebot-template.git
 cd triagebot-template
-python3 -m venv .venv
-source .venv/bin/activate          # macOS / Linux
-# .venv\Scripts\activate          # Windows
-pip install -r requirements.txt
-cp .env.example .env
+cp .env.example .env                       # incluye PYTHON_BIN=py -3.12
+py -3.12 -m pip install -r requirements.txt
 ```
 
-Edita `.env` y añade tu API key:
+Edita `.env` y añade tu API key de OpenRouter:
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-...
+OPENROUTER_API_KEY=sk-or-...
 ```
 
 Comprueba que `.env` está ignorado por Git:
@@ -59,7 +61,7 @@ git status
 ## Ejecutar tests
 
 ```bash
-pytest -v
+py -3.12 -m pytest -v          # equivale a "$PYTHON_BIN -m pytest -v"
 ```
 
 Al clonar el repo plantilla, los tests de aceptación deben fallar. Eso es lo esperado: todavía no habéis implementado TriageBot.
@@ -67,7 +69,7 @@ Al clonar el repo plantilla, los tests de aceptación deben fallar. Eso es lo es
 ## Ejecutar la app
 
 ```bash
-uvicorn app.main:app --reload
+py -3.12 -m uvicorn app.main:app --reload
 ```
 
 Abre:
@@ -96,6 +98,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Ceballos, Iker
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
