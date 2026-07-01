@@ -11,7 +11,7 @@ from __future__ import annotations
 import threading
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Annotated
 
@@ -93,6 +93,8 @@ def _filtered_tickets(
     priority: Priority | None,
     status_: Status | None,
     vencidos: bool = False,
+    desde: date | None = None,
+    hasta: date | None = None,
 ) -> list[Ticket]:
     """Tickets más recientes primero, con filtros opcionales combinables."""
     query = select(Ticket)
@@ -102,6 +104,11 @@ def _filtered_tickets(
         query = query.where(Ticket.priority == priority)
     if status_ is not None:
         query = query.where(Ticket.status == status_)
+    if desde is not None:
+        query = query.where(Ticket.created_at >= datetime(desde.year, desde.month, desde.day))
+    if hasta is not None:
+        cutoff = datetime(hasta.year, hasta.month, hasta.day) + timedelta(days=1)
+        query = query.where(Ticket.created_at < cutoff)
     query = query.order_by(Ticket.created_at.desc())
     tickets = list(session.exec(query).all())
     if vencidos:
@@ -152,9 +159,11 @@ def list_tickets(
     priority: Priority | None = None,
     status: Status | None = None,
     vencidos: bool = False,
+    desde: date | None = None,
+    hasta: date | None = None,
 ) -> list[Ticket]:
     """Lista tickets (más recientes primero) con filtros opcionales combinables."""
-    return _filtered_tickets(session, category, priority, status, vencidos)
+    return _filtered_tickets(session, category, priority, status, vencidos, desde, hasta)
 
 
 # ---------------------------------------------------------------------------
