@@ -19,16 +19,16 @@ TriageBot permite:
 
 ## Stack obligatorio
 
-| Capa | Herramienta |
-|---|---|
-| Lenguaje | Python 3.11+ |
-| Backend | FastAPI |
-| Datos | SQLite |
-| Frontend | HTML + HTMX + Tailwind CDN |
-| LLM | Claude vía API de Anthropic |
-| Tests | pytest |
-| CI/CD | GitHub Actions |
-| IDE + IA | VS Code + Claude Code |
+| Capa     | Herramienta                 |
+| -------- | --------------------------- |
+| Lenguaje | Python 3.11+                |
+| Backend  | FastAPI                     |
+| Datos    | SQLite                      |
+| Frontend | HTML + HTMX + Tailwind CDN  |
+| LLM      | Claude vía API de Anthropic |
+| Tests    | pytest                      |
+| CI/CD    | GitHub Actions              |
+| IDE + IA | VS Code + Claude Code       |
 
 ## Setup local
 
@@ -96,6 +96,6 @@ Los detalles obligatorios están en:
 
 ## Equipo
 
-Nombres:
+Nombres: Unai
 
-Metodología: `Vibe` / `Spec-Driven`
+Metodología: `Spec-Driven`
