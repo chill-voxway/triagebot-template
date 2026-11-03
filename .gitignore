@@ -25,5 +25,8 @@ venv/
 .idea/
 .vscode/settings.json
 
+# Claude Code (ajustes locales de cada persona)
+.claude/settings.local.json
+
 # Logs
 *.log

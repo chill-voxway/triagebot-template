@@ -56,7 +56,7 @@ El equipo de Plataforma nos ha pedido que el stack sea este:
 - SQLite
 - HTML + HTMX
 - Tailwind por CDN
-- Claude API para la clasificación
+- Un LLM vía OpenRouter (gpt-oss-120b) para la clasificación
 - pytest para tests
 - GitHub Actions para CI
 
@@ -67,7 +67,7 @@ Sabremos que está terminado cuando:
 - Pueda crear un ticket desde API.
 - El ticket quede persistido en SQLite.
 - El ticket se clasifique automáticamente.
-- Si Claude falla, la aplicación no se cae y usa un fallback seguro.
+- Si la IA falla, la aplicación no se cae y usa un fallback seguro.
 - Pueda ver los tickets en una página web.
 - Pueda filtrar por categoría, prioridad y estado.
 - Los 5 tests obligatorios estén verdes.

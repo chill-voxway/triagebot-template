@@ -10,3 +10,7 @@ ignore = []
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra"
+
+[tool.ruff.lint.per-file-ignores]
+# Los alumnos no pueden tocar los tests de aceptación: que sus líneas largas no tumben la CI.
+"tests/test_acceptance.py" = ["E501"]
